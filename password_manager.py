@@ -1,26 +1,30 @@
+import os
 import pickle
+from cryptography.fernet import Fernet
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+
 
 class PasswordManager:
-  MAX_PASSWORD_LEN = 64;
+  MAX_PASSWORD_LEN = 64
 
+  # TODO: Still need to verify checksum
   def __init__(self, password, data = None, checksum = None):
-    """Constructor for the password manager.
-    
-    Args:
-      password (str) : master password for the manager
-      data (str) [Optional] : a hex-encoded serialized representation to load
-                              (defaults to None, which initializes an empty password
-                              manager)
-      checksum (str) [Optional] : a hex-encoded checksum used to protect the data against
-                                  possible rollback attacks (defaults to None, in which
-                                  case, no rollback protection is guaranteed)
+    # dictionary stores the encrypted passwords (value) for each encrypted domain (key) 
+    self.kvs = {}  
+    # salt for pw manager encryption
+    self.salt = os.urandom(16)
+    # Create the new master password 
+    kdf = PBKDF2HMAC(algorithm = hashes.SHA256(), length = 32, salt = self.salt, iterations = 2000000, backend = default_backend())
+    self.mpw = kdf.derive(bytes(password, 'ascii'))
 
-    Raises:
-      ValueError : malformed serialized format
-    """
-    self.kvs = {}
+    # load in previous state if the checksums are valid  
     if data is not None:
+      # check the checksum value 
+      # load in the data
       self.kvs = pickle.loads(bytes.fromhex(data))
+      # decrypt the data
 
   def dump(self):
     """Computes a serialized representation of the password manager
