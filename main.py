@@ -8,10 +8,17 @@ def error(s):
 print('Initializing password maanger')
 password_manager = PasswordManager('123456')
 
+# print('Serializing contents of the password manager')
+# data, checksum = password_manager.dump()
+
+# print('Loading contents of password manager from disk')
+# new_manager = PasswordManager('123456', data, checksum)
+
 print('Adding passwords to password manager')
-kvs = { 'domain1': 'password1', 
-        'domain2': 'password2',
-        'domain3': 'password3' }
+# kvs = { 'domain1': 'password1', 
+#         'domain2': 'password2',
+#         'domain3': 'password3' }
+kvs = { 'domain1': 'password1' }
 for domain in kvs:
   password_manager.set(domain, kvs[domain])
 
@@ -20,6 +27,8 @@ for domain in kvs:
   pw = password_manager.get(domain)
   if pw != kvs[domain]:
     error('get failed for domain %s (expected %s, received %s)' % (domain, kvs[domain], pw))
+  else:
+    print("CORRECTLY DECODED")
 pw = password_manager.get('non-existent')
 if pw is not None:
   error('get failed for domain non-existent (expected None, received %s)' % pw)
